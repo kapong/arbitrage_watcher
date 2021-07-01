@@ -12,6 +12,7 @@ This project aims to prove the concept of a arbitrage monitoring that migrate to
 ## Prerequisite
 
 - Docker
+- build-essential
 
 ## Usage
 
