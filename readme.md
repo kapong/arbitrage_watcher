@@ -18,7 +18,7 @@ This project aims to prove the concept of a arbitrage watcher that migrate to we
 
 Users can configure the watcher through the environment file (.env).
 
-- `EXPECTED_PROFIT` is the expected profit threshold. Setting this value to 5.00, the watcher will trigger if the arbitrage profit goes up to 5%, 10%, 15%, and so on.
+- ~~`EXPECTED_PROFIT` is the expected profit threshold. Setting this value to 5.00, the watcher will trigger if the arbitrage profit goes up to 5%, 10%, 15%, and so on.~~ (deprecated; use expectedProfile in Swap class instead)
 - `WATCHING_INTERVAL` is the interval time (in minutes) that the watcher tries to query the price on-chain.
 - `DISCORD_WEBHOOK` can be obtained on Discord, by go to _Text-Channels_ > _Edit-Channel_ > _Integrations_ > _Webhooks_.
 
