@@ -44,6 +44,8 @@ func main(){
 			OutputToken: "bLuna",
 			InputAmount: 1000 * uint64(1000000),
 			URL: "https://app.terraswap.io/#Swap",
+			ExpectedProfit: 5.00,
+			Step: 5,
 		},
 		&model.Swap{ // Bluna to Luna
 			Contract: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp", 
@@ -51,6 +53,8 @@ func main(){
 			OutputToken: "uLuna",
 			InputAmount: 1000 * uint64(1000000),
 			URL: "https://app.terraswap.io/#Swap",
+			ExpectedProfit: 0,
+			Step: 5,
 		},
 	}
 	
@@ -61,9 +65,9 @@ func main(){
 			swapResult := terraswap.GetPrice(swap)
 
 			// if simulated profit is greater than expected profit then notify to webhook
-			if swapResult.Changed >= expectedProfitThreshold {
+			if swapResult.Changed >= swapResult.ExpectedProfit {
 				
-				if swapResult.Changed > latestSwap[i] + expectedProfitThreshold {
+				if swapResult.Changed > latestSwap[i] + swapResult.Step {
 					networking.PostContent(
 						discordWebhookURL, 
 						discord.GetDiscordContent(swapResult),
@@ -73,7 +77,7 @@ func main(){
 					log.Println(fmt.Sprintf("%s → %s (%.2f%%) is already emitted", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed))
 				}
 			} else {
-				log.Println(fmt.Sprintf("%s → %s (%.2f%%) doesn't met the threshold", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed))
+				log.Println(fmt.Sprintf("%s → %s (%.2f%%) doesn't met the threshold (expected profit >= %.2f%%)", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed, swapResult.ExpectedProfit))
 				latestSwap[i] = 0
 			}
 			
