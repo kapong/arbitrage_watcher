@@ -16,12 +16,8 @@ import (
 func main(){
 	utils.CheckEnv(
 		"DISCORD_WEBHOOK",
-		"EXPECTED_PROFIT",
 		"WATCHING_INTERVAL",
 	)
-
-	expectedProfitThreshold, err := strconv.ParseFloat(os.Getenv("EXPECTED_PROFIT"), 64)
-	utils.CheckErr(err)
 
 	watchingIntervalStr, err := strconv.ParseInt(os.Getenv("WATCHING_INTERVAL"), 10, 64)
 	watchingInterval := time.Duration(watchingIntervalStr) * time.Minute
@@ -30,7 +26,6 @@ func main(){
 	discordWebhookURL := os.Getenv("DISCORD_WEBHOOK")
 
 	fmt.Print("\n_____________________\n\n")
-	fmt.Println("EXPECTED_PROFIT:", expectedProfitThreshold)
 	fmt.Println("WATCHING_INTERVAL:", watchingInterval)
 	fmt.Print("_____________________\n\n")
 
@@ -45,7 +40,7 @@ func main(){
 			InputAmount: 1000 * uint64(1000000),
 			URL: "https://app.terraswap.io/#Swap",
 			ExpectedProfit: 5.00,
-			Step: 5,
+			ExpectedProfileStep: 5,
 		},
 		&model.Swap{ // Bluna to Luna
 			Contract: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp", 
@@ -54,7 +49,7 @@ func main(){
 			InputAmount: 1000 * uint64(1000000),
 			URL: "https://app.terraswap.io/#Swap",
 			ExpectedProfit: 0,
-			Step: 5,
+			ExpectedProfileStep: 5,
 		},
 	}
 	
@@ -67,7 +62,7 @@ func main(){
 			// if simulated profit is greater than expected profit then notify to webhook
 			if swapResult.Changed >= swapResult.ExpectedProfit {
 				
-				if swapResult.Changed > latestSwap[i] + swapResult.Step {
+				if swapResult.Changed > latestSwap[i] + swapResult.ExpectedProfileStep {
 					networking.PostContent(
 						discordWebhookURL, 
 						discord.GetDiscordContent(swapResult),

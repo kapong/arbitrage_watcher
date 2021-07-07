@@ -8,7 +8,7 @@ type Swap struct {
 	URL string
 
 	ExpectedProfit float64
-	Step float64
+	ExpectedProfileStep float64
 
 	ReturnAmount uint64
 	SpreadAmount uint64
