@@ -8,12 +8,13 @@ import (
 	"arbitrage_monitoring/pkg/discord"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"time"
 )
 
-func main(){
+func main() {
 	utils.CheckEnv(
 		"DISCORD_WEBHOOK",
 		"WATCHING_INTERVAL",
@@ -34,25 +35,25 @@ func main(){
 	latestSwap := make(map[int]float64, 0)
 	swapList := []*model.Swap{
 		&model.Swap{ // Luna to Bluna
-			Contract: "terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p", 
-			InputToken: "uLuna",
-			OutputToken: "bLuna",
-			InputAmount: 1000 * uint64(1000000),
-			URL: "https://app.terraswap.io/#Swap",
-			ExpectedProfit: 5.00,
+			Contract:            "terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p",
+			InputToken:          "uLuna",
+			OutputToken:         "bLuna",
+			InputAmount:         1000 * uint64(1000000),
+			URL:                 "https://app.terraswap.io/#Swap",
+			ExpectedProfit:      5.00,
 			ExpectedProfileStep: 5,
 		},
 		&model.Swap{ // Bluna to Luna
-			Contract: "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp", 
-			InputToken: "bLuna",
-			OutputToken: "uLuna",
-			InputAmount: 1000 * uint64(1000000),
-			URL: "https://app.terraswap.io/#Swap",
-			ExpectedProfit: 0,
-			ExpectedProfileStep: 5,
+			Contract:            "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp",
+			InputToken:          "bLuna",
+			OutputToken:         "uLuna",
+			InputAmount:         1000 * uint64(1000000),
+			URL:                 "https://app.terraswap.io/#Swap",
+			ExpectedProfit:      -1.5,
+			ExpectedProfileStep: 1.5,
 		},
 	}
-	
+
 	for {
 
 		for i, swap := range swapList {
@@ -60,22 +61,23 @@ func main(){
 			swapResult := terraswap.GetPrice(swap)
 
 			// if simulated profit is greater than expected profit then notify to webhook
+
 			if swapResult.Changed >= swapResult.ExpectedProfit {
-				
-				if swapResult.Changed > latestSwap[i] + swapResult.ExpectedProfileStep {
+				if (math.Abs(math.Abs(latestSwap[i])-math.Abs(swapResult.Changed)) > swapResult.ExpectedProfileStep) || latestSwap[i] == 0 {
 					networking.PostContent(
-						discordWebhookURL, 
+						discordWebhookURL,
 						discord.GetDiscordContent(swapResult),
 					)
+					log.Println(fmt.Sprintf("%s → %s (%.2f%%) can be profitable !", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed))
 					latestSwap[i] = swapResult.Changed
 				} else {
 					log.Println(fmt.Sprintf("%s → %s (%.2f%%) is already emitted", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed))
 				}
 			} else {
-				log.Println(fmt.Sprintf("%s → %s (%.2f%%) doesn't met the threshold (expected profit >= %.2f%%)", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed, swapResult.ExpectedProfit))
+				log.Println(fmt.Sprintf("%s → %s (%.2f%%) doesn't met the threshold (expected >= %.2f%%)", swapResult.InputToken, swapResult.OutputToken, swapResult.Changed, swapResult.ExpectedProfit))
 				latestSwap[i] = 0
 			}
-			
+
 		}
 		time.Sleep(watchingInterval)
 	}
