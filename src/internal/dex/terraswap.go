@@ -19,8 +19,8 @@ type TerraswapResponse struct {
 }
 
 type TerraswapOutput struct {
-	ReturnAmount string `json:"return_amount"`
-	SpreadAmount string `json:"spread_amount"`
+	ReturnAmount     string `json:"return_amount"`
+	SpreadAmount     string `json:"spread_amount"`
 	CommissionAmount string `json:"commission_amount"`
 }
 
@@ -28,23 +28,23 @@ type Terraswap struct {
 	DEX
 }
 
-func (t* Terraswap) GetPrice(swap *model.Swap) *model.Swap {
-	
+func (t *Terraswap) GetPrice(swap *model.Swap) *model.Swap {
+
 	var query string
-	if strings.ToLower(swap.InputToken) == "bluna" { // except bluna is difference from others
-		query = fmt.Sprintf(`%s/wasm/contracts/terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p/store?query_msg={"simulation":{"offer_asset":{"amount":"%d","info":{"token":{"contract_addr":"%s"}}}}}`, 
-			TerraswapEndpoint, 
+	if strings.ToLower(swap.InputToken.Code) == "bluna" { // except bluna is difference from others
+		query = fmt.Sprintf(`%s/wasm/contracts/terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p/store?query_msg={"simulation":{"offer_asset":{"amount":"%d","info":{"token":{"contract_addr":"%s"}}}}}`,
+			TerraswapEndpoint,
 			swap.InputAmount,
 			swap.Contract,
 		)
 	} else {
-		query = fmt.Sprintf(`%s/wasm/contracts/terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p/store?query_msg={"simulation":{"offer_asset":{"amount":"%d","info":{"native_token":{"denom":"%s"}}}}}`, 
-			TerraswapEndpoint, 
-			swap.InputAmount, 
-			strings.ToLower(swap.InputToken),
+		query = fmt.Sprintf(`%s/wasm/contracts/terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p/store?query_msg={"simulation":{"offer_asset":{"amount":"%d","info":{"native_token":{"denom":"%s"}}}}}`,
+			TerraswapEndpoint,
+			swap.InputAmount,
+			strings.ToLower(swap.InputToken.Code),
 		)
 	}
-	
+
 	data, err := networking.GetContent(query)
 	if err != nil {
 		log.Println(err)
@@ -59,7 +59,7 @@ func (t* Terraswap) GetPrice(swap *model.Swap) *model.Swap {
 	return t.parse(swap, &response.Output)
 }
 
-func (t* Terraswap) parse(swap *model.Swap, response *TerraswapOutput) *model.Swap {
+func (t *Terraswap) parse(swap *model.Swap, response *TerraswapOutput) *model.Swap {
 	returnAmount, err := strconv.ParseUint(response.ReturnAmount, 0, 64)
 	if err != nil {
 		log.Println(err)
@@ -75,6 +75,6 @@ func (t* Terraswap) parse(swap *model.Swap, response *TerraswapOutput) *model.Sw
 	swap.ReturnAmount = returnAmount
 	swap.SpreadAmount = spreadAmount
 	swap.CommissionAmount = commissionAmount
-	swap.Changed = float64(float64(returnAmount * 100) / float64(swap.InputAmount))-100
+	swap.Changed = float64(float64(returnAmount*100)/float64(swap.InputAmount)) - 100
 	return swap
 }
