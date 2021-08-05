@@ -81,7 +81,7 @@ func main() {
 		for i, swap := range swapList {
 
 			// get simulated price of each
-			swapResult := terraswap.GetPrice(swap)
+			swapResult, err := terraswap.GetPrice(swap)
 			if err != nil {
 				log.Println(err)
 				break

@@ -5,7 +5,7 @@ import (
 )
 
 type DEXInterface interface {
-	GetPrice(swap *model.Swap) *model.Swap
+	GetPrice(swap *model.Swap) (*model.Swap, error)
 }
 
 type DEX struct {
